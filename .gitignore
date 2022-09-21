@@ -105,3 +105,6 @@ venv.bak/
 
 # code.jpg
 code.jpg
+
+# config
+config.json
