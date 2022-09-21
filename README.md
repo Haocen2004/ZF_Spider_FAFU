@@ -5,7 +5,7 @@
 本Repo进行修改以适配Fafu教务系统
 
 ## 使用方法
-复制 `config.json.example` 为 `config.json` 并填写内容，默认配置指向Fafu@2022体育选课
+复制 `config.json.example` 为 `config.json` 并填写内容，默认配置指向Fafu@2022体育选课  
 安装运行依赖 `pip install requests pillow bs4`  
 运行 `python main.py`
 
