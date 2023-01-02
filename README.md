@@ -9,5 +9,17 @@
 安装运行依赖 `pip install requests pillow bs4`  
 运行 `python main.py`
 
+## 配置文件说明
+```json
+{
+    "url":"http://jwgl.fafu.edu.cn/", // 选课用教务系统网址 内外网均可
+    "student_number":"",  // 学号
+    "password":"",  // 密码
+    "gnmkdm":"N121205",  // 选课界面网络请求头里有该字段 自行抓包获取
+    "sub_class_type":"板块（9）", // 选课界面name为ddl_xqbs的select的对应value
+    "class_type": 1 // 0 为体育抢课  1 为公选课抢课
+}
+```
+
 ## 关于
 原文博客地址：https://vhyz.github.io/2018/06/12/用Python实现模拟登录正方教务系统抢课/

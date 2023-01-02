@@ -106,5 +106,6 @@ venv.bak/
 # code.jpg
 code.jpg
 
-# config
+# local data
 config.json
+session

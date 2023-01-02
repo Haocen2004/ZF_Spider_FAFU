@@ -3,5 +3,6 @@
     "student_number":"",
     "password":"",
     "gnmkdm":"N121205",
-    "sub_class_type":"板块（9）"
+    "sub_class_type":"板块（9）",
+    "class_type": 1
 }
