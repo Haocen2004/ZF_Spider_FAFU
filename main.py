@@ -234,7 +234,7 @@ class Spider:
             self.__headers['Referer'] = request.url
             soup = BeautifulSoup(request.text, 'html.parser')
             self.__set__VIEWSTATE(soup)
-            selected_lessons_pre_tag = soup.find('legend', text='已选课程')
+            selected_lessons_pre_tag = soup.find('legend', string='已选课程')
             selected_lessons_tag = selected_lessons_pre_tag.parent
             
             # print(soup)
@@ -246,14 +246,16 @@ class Spider:
             # print(request.text)
             soup = BeautifulSoup(request.text, 'html.parser')
             self.__set__VIEWSTATE(soup)
-            selected_lessons_pre_tag = soup.find('legend', text='已选列表').parent
+            selected_lessons_pre_tag = soup.find('legend', string='已选列表').parent
             # print(selected_lessons_pre_tag.prettify())
             selected_lessons_tag = selected_lessons_pre_tag.table
 
         tr_list = selected_lessons_tag.find_all('tr')[1:]
         self.__now_lessons_number = len(tr_list)
+        print('您已经选择了以下课程：')
         for tr in tr_list:
             td = tr.find('td')
+            print(td.string)
             self.__now_lessons_id.append(td.string)
         # try:
         #     xq_tag = soup.find('select', id='ddl_xqbs')
@@ -363,10 +365,10 @@ class Spider:
                     for s in re.findall(r, error_tag_text):
                         print(s)
                 if config['class_type'] == 1:
-                    selected_lessons_pre_tag = soup.find('legend', text='已选课程')
+                    selected_lessons_pre_tag = soup.find('legend', string='已选课程')
                     selected_lessons_tag = selected_lessons_pre_tag.next_sibling
                 else:
-                    selected_lessons_pre_tag = soup.find('legend', text='已选列表').parent
+                    selected_lessons_pre_tag = soup.find('legend', string='已选列表').parent
                     selected_lessons_tag = selected_lessons_pre_tag.table
                 tr_list = selected_lessons_tag.find_all('tr')[1:]
                 if ( len(tr_list) > self.__now_lessons_number) :
@@ -395,6 +397,9 @@ class Spider:
             # with open('lesson_list.txt','w') as f:
             #     f.write(str(lesson_list_output))
             print('请输入想选的课的id,如果没有课程显示,请检查config中gnmkdm和subid设置')
+            # spread to muilt input split as ,
+            # input_str = input()
+
             select_id = int(input())
             lesson_list = lesson_list[select_id:select_id + 1]
             thread_list = list()
