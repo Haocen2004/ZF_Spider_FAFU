@@ -145,7 +145,7 @@ class Spider:
             try:
                 name_tag = soup.find(id='xm')
                 if name_tag.string == self.__name:
-                    print('欢迎' + self.__name)
+                    print('当前登陆用户：' + self.__name)
                     self.__enter_lessons_first()
                     return True
                 else:
@@ -200,7 +200,7 @@ class Spider:
             try:
                 name_tag = soup.find(id='xhxm')
                 self.__name = name_tag.string[:len(name_tag.string) - 2]
-                print('欢迎' + self.__name)
+                print('当前登陆用户：' + self.__name)
                 
                 # self.__set__VIEWSTATE(soup)
                 self.__session_cache['student_number'] = uid
@@ -232,7 +232,8 @@ class Spider:
             self.__headers['Referer'] = self.__real_base_url + 'xs_main.aspx?xh=' + self.__uid
             request = self.session.get(self.__real_base_url + 'xf_xsqxxxk.aspx', params=data, headers=self.__headers)
             self.__headers['Referer'] = request.url
-            soup = BeautifulSoup(request.text, 'html.parser')
+            soup = BeautifulSoup(request.content.decode('gb2312'), 'html.parser')
+            # print(soup)
             self.__set__VIEWSTATE(soup)
             selected_lessons_pre_tag = soup.find('legend', string='已选课程')
             selected_lessons_tag = selected_lessons_pre_tag.parent
@@ -244,7 +245,7 @@ class Spider:
             request = self.session.get(self.__real_base_url + 'xf_xstyxk.aspx', params=data, headers=self.__headers)
             self.__headers['Referer'] = request.url
             # print(request.text)
-            soup = BeautifulSoup(request.text, 'html.parser')
+            soup = BeautifulSoup(request.content.decode('gb2312'), 'html.parser')
             self.__set__VIEWSTATE(soup)
             selected_lessons_pre_tag = soup.find('legend', string='已选列表').parent
             # print(selected_lessons_pre_tag.prettify())
@@ -333,8 +334,11 @@ class Spider:
             }
             print('getting lession data')
             request = self.session.post(self.__real_base_url + 'xf_xstyxk.aspx', params=data, headers=self.__headers, data=data2)
-        # print(request.text)
-        soup = BeautifulSoup(request.text, 'html.parser')
+        soup = BeautifulSoup(request.content.decode('gb2312'), 'html.parser')
+        if soup.find('title').string == 'ERROR - 出错啦！':
+            print('选课系统出错，请稍后重试')
+            print(soup.find(attrs={"class":"t14"}).string)
+            os._exit(0)
         self.__set__VIEWSTATE(soup)
         return self.__get_lessons(soup)
 
@@ -346,8 +350,8 @@ class Spider:
         '''
         data = copy.deepcopy(self.__base_data)
         data['Button1'] = '  提交  '.encode('gb2312')
-        class_state=True
-        while class_state:
+        class_state = {}
+        while len(class_state) != len(lesson_list):
             for lesson in lesson_list:
                 try:
                     code = lesson.code
@@ -357,28 +361,34 @@ class Spider:
                     continue
                 start = time.time()
                 soup = BeautifulSoup(request.text, 'html.parser')
-                self.__set__VIEWSTATE(soup)
-                error_tag = soup.script
-                if not error_tag is None:
-                    error_tag_text = error_tag.string
-                    r = "alert\('(.+?)'\);"
-                    for s in re.findall(r, error_tag_text):
-                        print(s)
-                if config['class_type'] == 1:
-                    selected_lessons_pre_tag = soup.find('legend', string='已选课程')
-                    selected_lessons_tag = selected_lessons_pre_tag.next_sibling
-                else:
-                    selected_lessons_pre_tag = soup.find('legend', string='已选列表').parent
-                    selected_lessons_tag = selected_lessons_pre_tag.table
-                tr_list = selected_lessons_tag.find_all('tr')[1:]
-                if ( len(tr_list) > self.__now_lessons_number) :
-                    class_state = False
-                    print('抢课成功')
-                for tr in tr_list:
-                    td = tr.find('td')
-                    if (td.string == lesson.number):
-                        class_state = False
-                        print(td.string+'已在已选列表中')
+                try:
+                    self.__set__VIEWSTATE(soup)                
+                    error_tag = soup.script
+                    if not error_tag is None:
+                        error_tag_text = error_tag.string
+                        r = "alert\('(.+?)'\);"
+                        for s in re.findall(r, error_tag_text):
+                            print(s)
+                    if config['class_type'] == 1:
+                        selected_lessons_pre_tag = soup.find('legend', string='已选课程')
+                        selected_lessons_tag = selected_lessons_pre_tag.next_sibling
+                    else:
+                        selected_lessons_pre_tag = soup.find('legend', string='已选列表').parent
+                        selected_lessons_tag = selected_lessons_pre_tag.table
+                    tr_list = selected_lessons_tag.find_all('tr')[1:]
+                    if ( len(tr_list) > self.__now_lessons_number) :
+                        class_state[lesson.code] = 1
+                        print('抢课成功')
+                    for tr in tr_list:
+                        td = tr.find('td')
+                        if (td.string == lesson.number):
+                            class_state[lesson.code] = 1
+                            print(td.string+'已在已选列表中')
+                except:
+                    print('未知错误，尝试再次登录')
+                    # t
+                
+
 
     def run(self,uid,password):
         '''
@@ -398,17 +408,31 @@ class Spider:
             #     f.write(str(lesson_list_output))
             print('请输入想选的课的id,如果没有课程显示,请检查config中gnmkdm和subid设置')
             # spread to muilt input split as ,
-            # input_str = input()
+            input_str = input()
+            input_list = input_str.split(',')
+            lesson_list = [lesson_list[int(i)] for i in input_list]
 
-            select_id = int(input())
-            lesson_list = lesson_list[select_id:select_id + 1]
+
+            # select_id = int(input())
+            # lesson_list = lesson_list[select_id:select_id + 1]
             thread_list = list()
-            for i in range(15):
-                thread_list.append(threading.Thread(target=self.__select_lesson,args=(lesson_list,)))
-            for i in range(15):
-                thread_list[i].start()
-            for i in range(15):  
-                thread_list[i].join()
+            while True:
+                if time.time() > 1719370740:
+                    break
+                print('等待抢课时间开始：', end='')
+                print(1719370740 - time.time())
+                time.sleep(0.5)
+            for j in range(len(lesson_list)):
+                temp_list = list()
+                for i in range(15):
+                    temp_list.append(threading.Thread(target=self.__select_lesson,args=([lesson_list[j]],)))
+                for i in range(15):
+                    temp_list[i].start()
+                for i in range(15):  
+                    temp_list[i].join()
+                thread_list.append(temp_list)
+            
+            
 
 
 if __name__ == '__main__':

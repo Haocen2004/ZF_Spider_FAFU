@@ -17,6 +17,10 @@ function doing(doc) {
         var i = Math.ceil(Math.random() * 2);
         item.options[i].selected = true;
     });
+    doc.querySelectorAll("#dgPjc select").forEach(function (item) {
+        var i = Math.ceil(Math.random() * 2);
+        item.options[i].selected = true;
+    });
     finish ++;
     doc.querySelector("#Button1").click()
 }
