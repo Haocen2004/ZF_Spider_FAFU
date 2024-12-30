@@ -12,18 +12,19 @@ import threading
 class Spider:
     class Lesson:
 
-        def __init__(self, name, code, teacher_name, Time, number):
+        def __init__(self, name, code, teacher_name, Time, number, total_number):
             self.name = name
             self.code = code
             self.teacher_name = teacher_name
             self.time = Time
             self.number = number
+            self.total_number = total_number
 
         def show(self):
             print(self.toString())
 
         def toString(self):
-            return '  name:' + self.name + '  code:' + self.code + '  teacher_name:' + self.teacher_name + '  time:' + self.time + ' number:' + str(self.number)
+            return '  name: ' + self.name + '  code: ' + self.code + '  teacher_name: ' + self.teacher_name + '  Time: ' + self.time + ' number: ' + str(self.number) + ' / ' + str(self.total_number)
 
     def __init__(self, url):
         self.__uid = ''
@@ -299,10 +300,11 @@ class Spider:
                 name = td_list[1].string
                 teacher_name = td_list[3].string
                 try:
-                    Time = td_list[4]['title']
+                    Time = td_list[8].string
                 except:
                     Time = ''
                 number = td_list[10].string
+                total_number = td_list[9].string
             else:
                 code = td_list[9].input['name']
                 name = td_list[0].string
@@ -318,7 +320,8 @@ class Spider:
                 pattern = re.compile(
                     r'\([0-9]+-[0-9]+-+[0-9]\)-[0-9]+-[0-9]+-[0-9]')
                 number = pattern.findall(raw_str)[0]
-            lesson = self.Lesson(name, code, teacher_name, Time, number)
+            lesson = self.Lesson(name, code, teacher_name,
+                                 Time, number, total_number)
             lesson_list.append(lesson)
         return lesson_list
 
@@ -352,7 +355,15 @@ class Spider:
             print('getting lession data')
             request = self.session.post(
                 self.__real_base_url + 'xf_xstyxk.aspx', params=data, headers=self.__headers, data=data2)
-        soup = BeautifulSoup(request.content.decode('gb2312'), 'html.parser')
+        try:
+            soup = BeautifulSoup(
+                request.content.decode('gb2312'), 'html.parser')
+        except:
+            try:
+                soup = BeautifulSoup(
+                    request.content.decode('gbk'), 'html.parser')
+            except:
+                soup = BeautifulSoup(request.text, 'html.parser')
         if soup.find('title').string == 'ERROR - 出错啦！':
             print('选课系统出错，请稍后重试')
             print(soup.find(attrs={"class": "t14"}).string)
