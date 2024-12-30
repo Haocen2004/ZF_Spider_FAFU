@@ -2,10 +2,14 @@
 
 ## 简介
 这是一个用Python写的正方教务抢课脚本，由于每个学校的教务系统可能存在改动，所以不一定可用。  
-本Repo进行修改以适配Fafu教务系统
+本Repo进行修改以适配Fafu教务系统  
+一次只能选一门课，如需多门课程请多开脚本，`session`可以共用，不会冲突。
 
 ## 使用方法
-复制 `config.json.example` 为 `config.json` 并填写内容，默认配置指向Fafu@2022体育选课  
+复制 `config.json.sport.example` 或者 `config.json.public.example` 为 `config.json` 并填写内容
+- `config.json.sport.example` 为体育选课  
+- `config.json.public.example` 为公选课选课
+
 安装运行依赖 `pip install requests pillow bs4`  
 运行 `python main.py`
 
